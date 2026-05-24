@@ -1,0 +1,48 @@
+{
+  "name": "spark-emdash",
+  "version": "0.1.0",
+  "description": "Admin UX enhancements for emdash CMS — multi-column modals, scroll, illustration previews",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./middleware": {
+      "import": "./dist/middleware.js",
+      "types": "./dist/middleware.d.ts"
+    },
+    "./css": "./dist/admin.css",
+    "./js": "./dist/admin.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc && node scripts/build-assets.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "emdash",
+    "cms",
+    "admin",
+    "ux",
+    "modal",
+    "cloudflare"
+  ],
+  "author": "Alchemy Zürich",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dimitrisurber/spark-emdash.git"
+  },
+  "peerDependencies": {
+    "astro": ">=4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
