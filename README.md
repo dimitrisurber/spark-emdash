@@ -25,6 +25,7 @@ spark-emdash fixes this by making the modal wider (920px on desktop), adding a s
 | **Wider modals** | Edit dialogs expand to 920px on desktop instead of the default narrow width |
 | **Scrollable forms** | The form body scrolls inside the modal with Save/Cancel pinned to the bottom |
 | **Multi-column field groups** | Related fields are grouped with section headers and arranged in 2 or 3 column grids |
+| **Live block previews** | See a rendered preview of the block at the top of the modal, updating live as you edit fields |
 | **Illustration previews** | Select fields for images show a 56px live thumbnail of the selected illustration |
 | **Sheet scroll fixes** | The right-side editor panel scrolls properly when blocks have many fields |
 
@@ -100,6 +101,46 @@ sparkEmdash({
 })
 ```
 
+## How to add live block previews
+
+The `previews` config renders a visual preview of the block at the top of the edit modal. Use `{{Field Label}}` placeholders for dynamic values — they update live as the editor types and are HTML-escaped automatically.
+
+```typescript
+sparkEmdash({
+  previews: {
+    Hero: {
+      html: `
+        <div class="emd-prev-hero" data-tone="{{Tone}}" style="text-align:{{Align}}">
+          <small>{{Eyebrow}}</small>
+          <h2>{{Title}}</h2>
+          <p>{{Lede}}</p>
+        </div>
+      `,
+      style: `
+        .emd-prev-hero { padding: 1.5rem 2rem; font-family: system-ui; }
+        .emd-prev-hero[data-tone="dark"] { background: #1a1a2e; color: #f0f0f0; }
+        .emd-prev-hero[data-tone="light"] { background: #fff; color: #1a1a2e; }
+        .emd-prev-hero h2 { font-size: 1.4rem; margin: 0.25rem 0; }
+        .emd-prev-hero p { opacity: 0.7; margin: 0.5rem 0 0; }
+        .emd-prev-hero small { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.65rem; opacity: 0.6; }
+      `,
+    },
+  },
+  layouts: { /* ... */ },
+})
+```
+
+Each preview has:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `html` | `string` | HTML template with `{{Field Label}}` placeholders |
+| `style` | `string?` | Optional CSS injected inside the preview container |
+
+Field labels must match exactly (case-sensitive, including spaces). Use `data-` attributes with CSS attribute selectors for conditional styling based on select values like Tone or Size. The preview container has a max-height of 240px and sits in the non-scrolling area of the modal, above the form fields.
+
+Previews work independently of `layouts` — you can add a preview to any block type, whether or not it has a layout definition.
+
 ## Can spark-emdash run without configuration?
 
 Yes. Call `sparkEmdash()` with no arguments for zero-config mode. You get wider modals, scrollable forms, and sheet scroll fixes immediately. Multi-column field grouping only activates for block types that have a matching layout definition. Illustration previews require the `illustrations` map.
@@ -125,7 +166,7 @@ spark-emdash is an Astro middleware that intercepts HTML responses from `/_emdas
 ```typescript
 import { sparkEmdash, buildPatch } from "spark-emdash";
 import { adminCSS } from "spark-emdash/css";
-import type { SparkConfig, BlockLayouts, FieldGroup, IllustrationMap } from "spark-emdash";
+import type { SparkConfig, BlockLayouts, FieldGroup, IllustrationMap, BlockPreview } from "spark-emdash";
 ```
 
 | Export | Description |
@@ -133,6 +174,17 @@ import type { SparkConfig, BlockLayouts, FieldGroup, IllustrationMap } from "spa
 | `sparkEmdash(config?)` | Returns an Astro middleware handler that patches the emdash admin |
 | `buildPatch(config?)` | Returns the raw HTML string (style + script) for custom injection outside Astro |
 | `adminCSS` | The raw CSS string for use in non-Astro setups |
+
+---
+
+## For AI coding agents
+
+spark-emdash ships with agent instructions and a preview generator skill:
+
+- **`CLAUDE.md`** — Agent-facing documentation covering architecture, config shape, security model, and how to make changes to the plugin.
+- **`skills/generate-previews.md`** — A skill that scans your project's emdash block definitions (or reads the existing `layouts` config) and auto-generates preview templates for every block type. It maps field names to HTML elements using heuristics (Title → `<h2>`, Eyebrow → `<small>`, Tone → `data-tone` attribute, etc.).
+
+To use the skill with Claude Code, copy `skills/generate-previews.md` to your project's `.claude/skills/` directory and invoke it with `/generate-previews`.
 
 ---
 

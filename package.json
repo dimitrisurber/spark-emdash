@@ -1,6 +1,6 @@
 {
   "name": "spark-emdash",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Admin UX enhancements for emdash CMS — live block previews, multi-column modals, scroll, illustration previews",
   "type": "module",
   "main": "dist/index.js",
@@ -19,7 +19,9 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "CLAUDE.md",
+    "skills"
   ],
   "scripts": {
     "build": "tsc && node scripts/build-assets.js",
