@@ -54,8 +54,17 @@ div[role="dialog"][data-open] form > div.emd-grid {
   color: var(--kumo-subtle, #6b7280) !important;
   margin: 0 !important; padding: 8px 0 0 !important;
   border-top: 1px solid var(--kumo-line, #e5e7eb);
+  cursor: pointer; user-select: none;
+  display: flex !important; align-items: center; justify-content: space-between;
 }
+.emd-section-label:hover { color: var(--kumo-text, #374151) !important; }
 .emd-section-label:first-child { border-top: none; padding-top: 0; }
+.emd-chevron::after {
+  content: ""; display: inline-block; width: 5px; height: 5px;
+  border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg); transition: transform 0.15s ease;
+}
+.emd-collapsed .emd-chevron::after { transform: rotate(-45deg); }
 
 /* ── Illustration preview ────────────────────────────── */
 .emd-illus-preview {
@@ -82,6 +91,28 @@ div[role="dialog"][data-open] form > div.emd-grid {
   font-family: system-ui, -apple-system, sans-serif;
 }
 .emd-preview:empty { display: none; }
+
+/* ── JSON field editor ──────────────────────────────── */
+.emd-json {
+  font-family: "SF Mono", "Cascadia Mono", "Fira Code", monospace !important;
+  font-size: 12px !important; tab-size: 2;
+}
+.emd-json-err { border-color: #ef4444 !important; box-shadow: 0 0 0 1px #ef4444 !important; }
+.emd-json-ok { border-color: #22c55e !important; }
+.emd-json-bar { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.emd-json-fmt {
+  font-size: 11px; padding: 2px 8px;
+  border: 1px solid var(--kumo-line, #d1d5db); border-radius: 4px;
+  background: var(--kumo-surface, #fff); color: var(--kumo-text, #374151); cursor: pointer;
+}
+.emd-json-fmt:hover { background: var(--kumo-hover, #f3f4f6); }
+.emd-json-status { font-size: 11px; color: var(--kumo-subtle, #6b7280); }
+
+/* ── Block list mini-preview ────────────────────────── */
+.emd-block-summary {
+  display: block; font-size: 11px; color: var(--kumo-subtle, #6b7280);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; margin-top: 2px;
+}
 
 @media (max-width: 640px) {
   div[role="dialog"][data-open] { max-width: calc(100vw - 2rem) !important; width: auto !important; }

@@ -26,6 +26,9 @@ spark-emdash fixes this by making the modal wider (920px on desktop), adding a s
 | **Scrollable forms** | The form body scrolls inside the modal with Save/Cancel pinned to the bottom |
 | **Multi-column field groups** | Related fields are grouped with section headers and arranged in 2 or 3 column grids |
 | **Live block previews** | See a rendered preview of the block at the top of the modal, updating live as you edit fields |
+| **Collapsible field groups** | Click any section header to collapse/expand its fields — focus on what you're editing |
+| **JSON field editor** | Textareas with JSON get monospace font, a Format button, and live validation (green/red border) |
+| **Block list summaries** | Block items in the editor show a one-line summary of their content (title, tone, etc.) |
 | **Illustration previews** | Select fields for images show a 56px live thumbnail of the selected illustration |
 | **Sheet scroll fixes** | The right-side editor panel scrolls properly when blocks have many fields |
 

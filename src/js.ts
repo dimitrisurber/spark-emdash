@@ -45,6 +45,55 @@ function addPreview(sel){
   r();sel.addEventListener("change",r);w.appendChild(b);
 }
 
+function enhanceJson(field){
+  var ta=field.querySelector("textarea");
+  if(!ta)return;
+  var la=field.querySelector("label");
+  var isJson=la&&la.textContent.toLowerCase().indexOf("json")>-1;
+  if(!isJson){try{if(ta.value.trim()){JSON.parse(ta.value);isJson=true;}}catch(e){}}
+  if(!isJson)return;
+  ta.classList.add("emd-json");
+  var bar=document.createElement("div");bar.className="emd-json-bar";
+  var btn=document.createElement("button");btn.type="button";btn.className="emd-json-fmt";
+  btn.textContent="Format";
+  var st=document.createElement("span");st.className="emd-json-status";
+  bar.appendChild(btn);bar.appendChild(st);
+  field.appendChild(bar);
+  function validate(){
+    if(!ta.value.trim()){ta.classList.remove("emd-json-err","emd-json-ok");st.textContent="";return;}
+    try{JSON.parse(ta.value);ta.classList.remove("emd-json-err");ta.classList.add("emd-json-ok");st.textContent="Valid";st.style.color="";}
+    catch(e){ta.classList.add("emd-json-err");ta.classList.remove("emd-json-ok");st.textContent="Invalid";st.style.color="#ef4444";}
+  }
+  btn.addEventListener("click",function(){
+    try{ta.value=JSON.stringify(JSON.parse(ta.value),null,2);validate();}catch(e){validate();}
+    ta.dispatchEvent(new Event("input",{bubbles:true}));
+  });
+  ta.addEventListener("input",validate);
+  validate();
+}
+
+function extractSummary(fc){
+  var vals=getVals(fc);var parts=[];
+  ["Title","Heading","Name","Headline"].forEach(function(k){if(vals[k])parts.push(vals[k]);});
+  if(!parts.length){for(var k in vals){if(vals[k]){parts.push(vals[k]);break;}}}
+  var meta=[];
+  ["Tone","Size","Align","Theme","Variant"].forEach(function(k){if(vals[k])meta.push(vals[k]);});
+  var s=parts.join(" ");
+  if(meta.length)s+=" \\u2014 "+meta.join(", ");
+  return s.length>80?s.substring(0,77)+"...":s;
+}
+
+function injectSummary(el,summary){
+  if(!el||!summary)return;
+  var ex=el.querySelector(".emd-block-summary");
+  if(ex){ex.textContent=summary;return;}
+  var sp=document.createElement("span");sp.className="emd-block-summary";
+  sp.textContent=summary;el.appendChild(sp);
+}
+
+var lastClicked=null;
+document.addEventListener("click",function(e){lastClicked=e.target;},true);
+
 function enhance(dialog){
   if(dialog.dataset.emdDone)return;
   dialog.dataset.emdDone="1";
@@ -55,6 +104,8 @@ function enhance(dialog){
   if(!form)return;
   var fc=form.children[0];
   if(!fc||fc.children.length===0)return;
+
+  var blockItem=lastClicked&&!dialog.contains(lastClicked)?lastClicked.closest("[data-block],[data-type],button,[role=button]"):null;
 
   var pcfg=PREV[type];
   if(pcfg){
@@ -73,6 +124,16 @@ function enhance(dialog){
     if(t.indexOf("illustration")>-1||t.indexOf("background")>-1||t.indexOf("foreground")>-1)addPreview(s);
   });
 
+  Array.from(fc.children).forEach(enhanceJson);
+
+  if(blockItem){
+    function updateSum(){injectSummary(blockItem,extractSummary(fc));}
+    updateSum();
+    fc.querySelectorAll("input,textarea,select").forEach(function(el){
+      el.addEventListener("input",updateSum);el.addEventListener("change",updateSum);
+    });
+  }
+
   var layout=LAYOUTS[type];
   if(!layout)return;
 
@@ -87,10 +148,12 @@ function enhance(dialog){
   layout.forEach(function(g){
     var hdr=document.createElement("div");
     hdr.className="emd-section-label";
-    hdr.textContent=g.label;
     hdr.style.order=String(ord++);
     fc.appendChild(hdr);
+    var ls=document.createElement("span");ls.textContent=g.label;hdr.appendChild(ls);
+    var chev=document.createElement("span");chev.className="emd-chevron";hdr.appendChild(chev);
 
+    var gf=[];
     var span=SPAN[g.cols]||6;
     g.fields.forEach(function(name){
       var el=byLabel.get(name);
@@ -99,6 +162,12 @@ function enhance(dialog){
       var isTextarea=!!el.querySelector("textarea");
       el.style.gridColumn="span "+(isTextarea?6:span);
       byLabel.delete(name);
+      gf.push(el);
+    });
+
+    hdr.addEventListener("click",function(){
+      var c=hdr.classList.toggle("emd-collapsed");
+      gf.forEach(function(f){f.style.display=c?"none":"";});
     });
   });
 
