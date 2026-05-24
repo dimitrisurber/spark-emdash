@@ -31,7 +31,11 @@ function getVals(fc){
 
 function renderPrev(box,cfg,fc){
   var vals=getVals(fc);
-  var h=cfg.html.replace(/\\{\\{(.+?)\\}\\}/g,function(_,k){return esc(vals[k.trim()]||"");});
+  var h=cfg.html.replace(/\\{\\{(.+?)\\}\\}/g,function(_,k){
+    var val=vals[k.trim()]||"";
+    if(val&&ILLUS[val])return '<img class="emd-prev-illus" src="'+ILLUS[val]+'" alt="'+esc(val)+'">';
+    return esc(val);
+  });
   box.innerHTML=(cfg.style?"<style>"+cfg.style+"</style>":"")+h;
 }
 
@@ -297,9 +301,74 @@ function enhance(dialog){
   });
 }
 
+/* ── Block list card visual previews ── */
+function enhanceCards(){
+  var pm=document.querySelector(".ProseMirror");
+  if(!pm)return;
+  // Find block node views: they have a contenteditable=false wrapper with the type label
+  pm.querySelectorAll('[contenteditable="false"]').forEach(function(card){
+    if(card.dataset.emdCard)return;
+    // Find the bold type label
+    var bold=card.querySelector('[class*="font-semibold"],[class*="font-bold"],strong,b');
+    if(!bold)return;
+    var typeName=bold.textContent.trim();
+    // Must have edit/delete buttons
+    if(!card.querySelector('button'))return;
+    card.dataset.emdCard="1";
+    // Try to read block attrs from ProseMirror
+    var attrs=null;
+    try{
+      var view=pm.pmViewDesc&&pm.pmViewDesc.view;
+      if(view){
+        var pos=view.posAtDOM(card,0);
+        if(pos!=null){
+          var rp=view.state.doc.resolve(pos);
+          var nd=rp.nodeAfter||rp.parent;
+          if(nd&&nd.attrs&&nd.attrs._type)attrs=nd.attrs;
+        }
+      }
+    }catch(e){}
+    if(!attrs)return;
+    // Build visual strip
+    var strip=document.createElement("div");
+    strip.className="emd-block-card";
+    var tone=attrs.tone||"";
+    if(tone==="on-dark"||tone==="on-gradient"){
+      strip.style.background="linear-gradient(135deg,#3b2d5e,#1a2744)";strip.style.color="#fff4e6";
+    }else if(tone==="on-sky"){
+      strip.style.background="#c6d5ef";strip.style.color="#292850";
+    }else{
+      strip.style.background="#fff4e6";strip.style.color="#292850";
+    }
+    // Illustration thumbnail
+    var ik=attrs.illustration||attrs.bgImage||attrs.bgForeground||attrs.hsBackground||attrs.portraitIllustration||"";
+    if(ik&&ILLUS[ik]){
+      var im=document.createElement("img");im.src=ILLUS[ik];im.className="emd-block-card__img";
+      strip.appendChild(im);
+    }
+    // Title
+    var tt=attrs.title||attrs.eyebrow||"";
+    if(tt){
+      var sp=document.createElement("span");sp.className="emd-block-card__title";
+      sp.textContent=tt.length>50?tt.substring(0,47)+"...":tt;
+      strip.appendChild(sp);
+    }
+    // Tone badge
+    if(tone){
+      var bg=document.createElement("span");bg.className="emd-block-card__badge";
+      bg.textContent=tone;strip.appendChild(bg);
+    }
+    card.style.position="relative";
+    card.insertBefore(strip,card.children[1]||null);
+  });
+}
+
 new MutationObserver(function(){
   document.querySelectorAll('div[role="dialog"][data-open]:not([data-emd-done])').forEach(enhance);
+  enhanceCards();
 }).observe(document.body,{childList:true,subtree:true});
+setTimeout(enhanceCards,1500);
+setTimeout(enhanceCards,4000);
 })();
 `;
 }

@@ -148,6 +148,28 @@ div[role="dialog"][data-open] form > div.emd-grid {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; margin-top: 2px;
 }
 
+/* ── Block list visual card ────────────────────────── */
+.emd-block-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 10px; border-radius: 8px;
+  margin: 2px 0 4px; min-height: 40px;
+  font-family: system-ui, -apple-system, sans-serif;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+.emd-block-card__img {
+  width: 36px; height: 36px; object-fit: contain;
+  border-radius: 4px; flex-shrink: 0;
+}
+.emd-block-card__title {
+  font-size: 12px; font-weight: 600; flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.emd-block-card__badge {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 2px 6px; border-radius: 3px; opacity: 0.7;
+  background: rgba(0,0,0,0.1); white-space: nowrap;
+}
+
 /* ── Character count ─────────────────────────────────── */
 .emd-char-count {
   font-size: 11px; color: var(--kumo-subtle, #9ca3af); margin-top: 2px;
