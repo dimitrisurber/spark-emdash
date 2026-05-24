@@ -48,9 +48,18 @@ The `enhanceJson()` function detects JSON textareas by: (1) checking if the fiel
 ### Block list summaries
 Tracks the last clicked element via a global `click` listener (capture phase). When a dialog opens, identifies the block list item that triggered it by walking up from `lastClicked` to the nearest `[data-block]`, `[data-type]`, `button`, or `[role=button]` element. Extracts a one-line summary from key fields (Title/Heading/Name + Tone/Size/Align metadata), truncated to 80 chars. Injects a `<span class="emd-block-summary">` into the block item. Summary updates live as fields are edited via `input`/`change` listeners.
 
+### Field search
+A search input (`.emd-search`) and "Copy JSON" button (`.emd-copy-btn`) are placed in a toolbar (`.emd-toolbar`) inserted before the form in the dialog flex column. Typing in the search filters fields by label (case-insensitive `indexOf`). While searching, section headers are hidden for a flat filtered view. Clearing the search restores collapsed group state via `data-emd-collapsed` attributes set by the collapsible handler.
+
+### Markdown preview
+The `enhanceMd()` function detects markdown textareas by: (1) label matching `/markdown|rich.?text/`, or (2) content detection (lines starting with `#`, presence of `**bold**` or `[link](url)` patterns, minimum 10 chars). Skips fields already marked as JSON (`.emd-json`). Renders via `miniMd()` which escapes HTML first (`esc()`), then applies regex transforms for headings, bold, italic, links (rendered as `<u>` without href for safety), and lists. Output goes into a `.emd-md-preview` div below the textarea, max-height 120px with scroll.
+
+### Copy block JSON
+The "Copy JSON" button in the toolbar calls `getVals(fc)` to collect all field values, pretty-prints with `JSON.stringify(vals, null, 2)`, and copies to clipboard via `navigator.clipboard.writeText()`. Shows "Copied!" feedback for 1.5 seconds.
+
 ## Security
 
-All config values serialized into the inline script use `safe()` which replaces `<` with `<` after `JSON.stringify` to prevent `</script>` breakout. Illustration previews use DOM API (createElement, textContent, .src) instead of innerHTML. Preview template rendering uses innerHTML for the developer-authored template but escapes all substituted field values. The JSON Format button dispatches a synthetic `input` event to keep React state in sync.
+All config values serialized into the inline script use `safe()` which replaces `<` with `<` after `JSON.stringify` to prevent `</script>` breakout. Illustration previews use DOM API (createElement, textContent, .src) instead of innerHTML. Preview template rendering uses innerHTML for the developer-authored template but escapes all substituted field values. Markdown preview escapes all HTML entities before applying markdown regex transforms — user content cannot inject HTML. The JSON Format button dispatches a synthetic `input` event to keep React state in sync.
 
 ## Generating previews for a project
 
@@ -76,4 +85,4 @@ There are no automated tests. To verify changes:
 1. Build with `npm run build`
 2. Link into an emdash project: `npm link` then `npm link spark-emdash` in the target project
 3. Open `/_emdash/admin`, edit a block with a matching layout/preview config
-4. Check: modal sizing, field grouping, collapsible sections, illustration thumbnails, live preview rendering, JSON editor validation, block list summaries
+4. Check: modal sizing, field grouping, collapsible sections, illustration thumbnails, live preview rendering, JSON editor validation, block list summaries, field search filtering, markdown preview rendering, copy JSON button

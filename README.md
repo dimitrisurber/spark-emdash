@@ -29,6 +29,9 @@ spark-emdash fixes this by making the modal wider (920px on desktop), adding a s
 | **Collapsible field groups** | Click any section header to collapse/expand its fields — focus on what you're editing |
 | **JSON field editor** | Textareas with JSON get monospace font, a Format button, and live validation (green/red border) |
 | **Block list summaries** | Block items in the editor show a one-line summary of their content (title, tone, etc.) |
+| **Field search** | Search box at the top of every modal — type to filter fields by label, hides section headers while searching |
+| **Markdown preview** | Textareas with markdown content show a live rendered preview (headings, bold, italic, links, lists) |
+| **Copy block JSON** | One-click button copies all field values as formatted JSON to clipboard |
 | **Illustration previews** | Select fields for images show a 56px live thumbnail of the selected illustration |
 | **Sheet scroll fixes** | The right-side editor panel scrolls properly when blocks have many fields |
 
@@ -146,7 +149,7 @@ Previews work independently of `layouts` — you can add a preview to any block 
 
 ## Can spark-emdash run without configuration?
 
-Yes. Call `sparkEmdash()` with no arguments for zero-config mode. You get wider modals, scrollable forms, sheet scroll fixes, collapsible section headers, JSON field editors, and block list summaries immediately. Multi-column field grouping only activates for block types that have a matching layout definition. Illustration previews require the `illustrations` map. Live block previews require the `previews` config.
+Yes. Call `sparkEmdash()` with no arguments for zero-config mode. You get wider modals, scrollable forms, sheet scroll fixes, collapsible section headers, JSON field editors, markdown previews, field search, copy-to-clipboard, and block list summaries immediately. Multi-column field grouping only activates for block types that have a matching layout definition. Illustration previews require the `illustrations` map. Live block previews require the `previews` config.
 
 ```typescript
 // Base UX fixes, no field grouping
