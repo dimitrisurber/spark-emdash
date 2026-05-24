@@ -54,12 +54,24 @@ A search input (`.emd-search`) and "Copy JSON" button (`.emd-copy-btn`) are plac
 ### Markdown preview
 The `enhanceMd()` function detects markdown textareas by: (1) label matching `/markdown|rich.?text/`, or (2) content detection (lines starting with `#`, presence of `**bold**` or `[link](url)` patterns, minimum 10 chars). Skips fields already marked as JSON (`.emd-json`). Renders via `miniMd()` which escapes HTML first (`esc()`), then applies regex transforms for headings, bold, italic, links (rendered as `<u>` without href for safety), and lists. Output goes into a `.emd-md-preview` div below the textarea, max-height 120px with scroll.
 
-### Copy block JSON
-The "Copy JSON" button in the toolbar calls `getVals(fc)` to collect all field values, pretty-prints with `JSON.stringify(vals, null, 2)`, and copies to clipboard via `navigator.clipboard.writeText()`. Shows "Copied!" feedback for 1.5 seconds.
+### Copy / Paste block JSON
+The toolbar contains "Copy JSON" and "Paste" buttons. Copy calls `getVals(fc)` and writes to clipboard as pretty-printed JSON. Paste reads clipboard text, parses as JSON, and fills matching fields by label. Both dispatch synthetic `input` events so React state stays in sync. Paste handles errors (invalid JSON → "Invalid" feedback, clipboard denied → "Denied" feedback).
+
+### Field dependencies
+Config-driven show/hide via `dependencies` in `SparkConfig`. The `DEPS` object maps block types to dependency rules: `{ "Background image": { field: "Tone", value: "dark" } }`. In `enhance()`, an IIFE-based `for..in` loop creates closures per dependency. Each watches the controlling field's `change`/`input` events and toggles `display: none` on the dependent field. Supports single string or string array for `value`.
+
+### Character / word count
+`addCharCount()` appends a `.emd-char-count` div below text inputs and textareas (skips JSON fields). Shows "N chars · M words" with optional smart limits detected from field label: 60 for title/heading, 155 for description/meta, 30 for eyebrow/tag. Over-limit triggers `.emd-char-warn` (red text).
+
+### Change tracking + reset
+On dialog open, `initVals` captures all field values. Each field gets a reset button (`.emd-reset-btn`, content `↺`) inserted after its label. The button is hidden via CSS until the field has `.emd-modified`. On each `input`/`change`, the field's current value is compared to `initVals[label]`. Modified fields get `.emd-modified` class (blue left `box-shadow` indicator). Reset button restores `initVals` value and dispatches `input` event.
+
+### Dark mode
+A `@media (prefers-color-scheme: dark)` block at the end of the CSS overrides backgrounds, borders, text colors, and accent colors for all spark-emdash elements. Uses darker palette (#1f2937 backgrounds, #374151 borders, #f3f4f6 text) with lighter accent variants (#60a5fa blue, #4ade80 green, #f87171 red).
 
 ## Security
 
-All config values serialized into the inline script use `safe()` which replaces `<` with `<` after `JSON.stringify` to prevent `</script>` breakout. Illustration previews use DOM API (createElement, textContent, .src) instead of innerHTML. Preview template rendering uses innerHTML for the developer-authored template but escapes all substituted field values. Markdown preview escapes all HTML entities before applying markdown regex transforms — user content cannot inject HTML. The JSON Format button dispatches a synthetic `input` event to keep React state in sync.
+All config values serialized into the inline script use `safe()` which replaces `<` with `<` after `JSON.stringify` to prevent `</script>` breakout. Illustration previews use DOM API (createElement, textContent, .src) instead of innerHTML. Preview template rendering uses innerHTML for the developer-authored template but escapes all substituted field values. Markdown preview escapes all HTML entities before applying markdown regex transforms — user content cannot inject HTML. The JSON Format button and Paste button dispatch synthetic `input` events to keep React state in sync. Clipboard read (Paste) requires browser permission — handled gracefully on denial.
 
 ## Generating previews for a project
 

@@ -1,9 +1,10 @@
-import type { BlockLayouts, BlockPreview, IllustrationMap } from "./types.js";
+import type { BlockLayouts, BlockPreview, FieldDependency, IllustrationMap } from "./types.js";
 
 export function adminJS(
   layouts: BlockLayouts,
   illustrations: IllustrationMap,
   previews: Record<string, BlockPreview>,
+  dependencies: Record<string, Record<string, FieldDependency>>,
 ): string {
   const SPAN: Record<number, number> = { 1: 6, 2: 3, 3: 2 };
   function safe(o: unknown) { return JSON.stringify(o).replace(/</g, "\\u003c"); }
@@ -13,6 +14,7 @@ var ILLUS=${safe(illustrations)};
 var LAYOUTS=${safe(layouts)};
 var SPAN=${safe(SPAN)};
 var PREV=${safe(previews)};
+var DEPS=${safe(dependencies)};
 
 function lbl(el){var l=el.querySelector("label");return l?l.textContent.trim():"";}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
@@ -119,6 +121,26 @@ function enhanceMd(field){
   render();ta.addEventListener("input",render);
 }
 
+function addCharCount(field){
+  var el=field.querySelector("textarea,input");
+  if(!el||el.classList.contains("emd-json"))return;
+  if(el.tagName==="INPUT"&&el.type&&el.type!=="text")return;
+  var cc=document.createElement("div");cc.className="emd-char-count";
+  field.appendChild(cc);
+  var la=field.querySelector("label");var limit=0;
+  if(la){var t=la.textContent.toLowerCase();
+    if(/title|heading|headline/.test(t))limit=60;
+    else if(/description|meta/.test(t))limit=155;
+    else if(/eyebrow|tag|kicker/.test(t))limit=30;
+  }
+  function upd(){
+    var v=el.value,c=v.length,w=v.trim()?v.trim().split(/\\s+/).length:0;
+    cc.textContent=c+" chars \\u00b7 "+w+" words"+(limit?" / "+limit:"");
+    cc.classList.toggle("emd-char-warn",limit>0&&c>limit);
+  }
+  upd();el.addEventListener("input",upd);
+}
+
 var lastClicked=null;
 document.addEventListener("click",function(e){lastClicked=e.target;},true);
 
@@ -132,6 +154,13 @@ function enhance(dialog){
   if(!form)return;
   var fc=form.children[0];
   if(!fc||fc.children.length===0)return;
+
+  var initVals={};
+  Array.from(fc.children).forEach(function(f){
+    var l=lbl(f);if(!l)return;
+    var el=f.querySelector("input,textarea,select");
+    if(el)initVals[l]=el.value;
+  });
 
   var blockItem=lastClicked&&!dialog.contains(lastClicked)?lastClicked.closest("[data-block],[data-type],button,[role=button]"):null;
 
@@ -156,6 +185,21 @@ function enhance(dialog){
       cb.textContent="Copied!";setTimeout(function(){cb.textContent="Copy JSON";},1500);
     });
   });
+  var pb=document.createElement("button");pb.type="button";pb.className="emd-paste-btn";pb.textContent="Paste";
+  tb.appendChild(pb);
+  pb.addEventListener("click",function(){
+    navigator.clipboard.readText().then(function(text){
+      try{
+        var vals=JSON.parse(text);
+        Array.from(fc.children).forEach(function(f){
+          var l=lbl(f);if(!l||!(l in vals))return;
+          var el=f.querySelector("input,textarea,select");
+          if(el){el.value=vals[l];el.dispatchEvent(new Event("input",{bubbles:true}));}
+        });
+        pb.textContent="Pasted!";setTimeout(function(){pb.textContent="Paste";},1500);
+      }catch(e){pb.textContent="Invalid";setTimeout(function(){pb.textContent="Paste";},1500);}
+    }).catch(function(){pb.textContent="Denied";setTimeout(function(){pb.textContent="Paste";},1500);});
+  });
 
   var pcfg=PREV[type];
   if(pcfg){
@@ -174,7 +218,33 @@ function enhance(dialog){
     if(t.indexOf("illustration")>-1||t.indexOf("background")>-1||t.indexOf("foreground")>-1)addPreview(s);
   });
 
-  Array.from(fc.children).forEach(function(f){enhanceJson(f);enhanceMd(f);});
+  Array.from(fc.children).forEach(function(f){enhanceJson(f);enhanceMd(f);addCharCount(f);});
+
+  var deps=DEPS[type];
+  if(deps){
+    var dm=new Map();
+    Array.from(fc.children).forEach(function(f){var l=lbl(f);if(l)dm.set(l,f);});
+    for(var df in deps){(function(dn,rule){
+      var de=dm.get(dn),wf=dm.get(rule.field);
+      if(!de||!wf)return;
+      var wi=wf.querySelector("select,input");
+      if(!wi)return;
+      var ok=Array.isArray(rule.value)?rule.value:[rule.value];
+      function chk(){de.style.display=ok.indexOf(wi.value)>-1?"":"none";}
+      chk();wi.addEventListener("change",chk);wi.addEventListener("input",chk);
+    })(df,deps[df]);}
+  }
+
+  Array.from(fc.children).forEach(function(f){
+    var l=lbl(f);if(!l||!(l in initVals))return;
+    var el=f.querySelector("input,textarea,select");if(!el)return;
+    var rb=document.createElement("button");rb.type="button";rb.className="emd-reset-btn";rb.title="Reset";rb.textContent="\\u21ba";
+    var la=f.querySelector("label");
+    if(la)la.parentNode.insertBefore(rb,la.nextSibling);else f.insertBefore(rb,f.firstChild);
+    function chk(){f.classList.toggle("emd-modified",el.value!==initVals[l]);}
+    rb.addEventListener("click",function(){el.value=initVals[l];el.dispatchEvent(new Event("input",{bubbles:true}));chk();});
+    el.addEventListener("input",chk);el.addEventListener("change",chk);
+  });
 
   if(blockItem){
     function updateSum(){injectSummary(blockItem,extractSummary(fc));}

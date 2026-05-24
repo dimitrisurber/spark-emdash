@@ -32,6 +32,11 @@ spark-emdash fixes this by making the modal wider (920px on desktop), adding a s
 | **Field search** | Search box at the top of every modal — type to filter fields by label, hides section headers while searching |
 | **Markdown preview** | Textareas with markdown content show a live rendered preview (headings, bold, italic, links, lists) |
 | **Copy block JSON** | One-click button copies all field values as formatted JSON to clipboard |
+| **Paste block JSON** | Paste button fills fields from clipboard JSON — duplicate blocks across pages instantly |
+| **Field dependencies** | Config-driven show/hide: only show fields when another field has a specific value |
+| **Character count** | Live char/word count below text fields with smart limits (60 for titles, 155 for descriptions) |
+| **Change tracking** | Blue indicator on modified fields with per-field reset button to restore original values |
+| **Dark mode** | Automatic dark theme for all spark-emdash UI via `prefers-color-scheme: dark` |
 | **Illustration previews** | Select fields for images show a 56px live thumbnail of the selected illustration |
 | **Sheet scroll fixes** | The right-side editor panel scrolls properly when blocks have many fields |
 
@@ -147,9 +152,33 @@ Field labels must match exactly (case-sensitive, including spaces). Use `data-` 
 
 Previews work independently of `layouts` — you can add a preview to any block type, whether or not it has a layout definition.
 
+## How to set up field dependencies
+
+The `dependencies` config hides fields until another field has a specific value. Only show "Background image" when Tone is "dark":
+
+```typescript
+sparkEmdash({
+  dependencies: {
+    Hero: {
+      "Background image": { field: "Tone", value: "dark" },
+      "Foreground overlay": { field: "Tone", value: ["dark", "brand"] },
+    },
+  },
+})
+```
+
+Each dependency has:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `field` | `string` | The field label to watch |
+| `value` | `string \| string[]` | Show the dependent field when the watched field has this value (or one of these values) |
+
+Dependencies update live as the editor changes select/input values.
+
 ## Can spark-emdash run without configuration?
 
-Yes. Call `sparkEmdash()` with no arguments for zero-config mode. You get wider modals, scrollable forms, sheet scroll fixes, collapsible section headers, JSON field editors, markdown previews, field search, copy-to-clipboard, and block list summaries immediately. Multi-column field grouping only activates for block types that have a matching layout definition. Illustration previews require the `illustrations` map. Live block previews require the `previews` config.
+Yes. Call `sparkEmdash()` with no arguments for zero-config mode. You get wider modals, scrollable forms, sheet scroll fixes, collapsible section headers, JSON field editors, markdown previews, field search, copy/paste JSON, character counts, change tracking, and dark mode immediately. Multi-column field grouping only activates for block types that have a matching layout definition. Illustration previews require the `illustrations` map. Live block previews require the `previews` config. Field dependencies require the `dependencies` config.
 
 ```typescript
 // Base UX fixes, no field grouping
@@ -172,7 +201,7 @@ spark-emdash is an Astro middleware that intercepts HTML responses from `/_emdas
 ```typescript
 import { sparkEmdash, buildPatch } from "spark-emdash";
 import { adminCSS } from "spark-emdash/css";
-import type { SparkConfig, BlockLayouts, FieldGroup, IllustrationMap, BlockPreview } from "spark-emdash";
+import type { SparkConfig, BlockLayouts, FieldGroup, IllustrationMap, BlockPreview, FieldDependency } from "spark-emdash";
 ```
 
 | Export | Description |

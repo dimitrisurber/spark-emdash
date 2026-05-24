@@ -6,7 +6,8 @@ export function buildPatch(config: SparkConfig = {}): string {
   const layouts = config.layouts ?? {};
   const illustrations = config.illustrations ?? {};
   const previews = config.previews ?? {};
-  return `<style>${adminCSS}</style>\n<script type="module">${adminJS(layouts, illustrations, previews)}</script>`;
+  const dependencies = config.dependencies ?? {};
+  return `<style>${adminCSS}</style>\n<script type="module">${adminJS(layouts, illustrations, previews, dependencies)}</script>`;
 }
 
 export type AstroMiddlewareContext = {

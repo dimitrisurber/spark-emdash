@@ -15,8 +15,14 @@ export interface BlockPreview {
   style?: string;
 }
 
+export interface FieldDependency {
+  field: string;
+  value: string | string[];
+}
+
 export interface SparkConfig {
   layouts?: BlockLayouts;
   illustrations?: IllustrationMap;
   previews?: Record<string, BlockPreview>;
+  dependencies?: Record<string, Record<string, FieldDependency>>;
 }
