@@ -5,7 +5,8 @@ import { adminJS } from "./js.js";
 export function buildPatch(config: SparkConfig = {}): string {
   const layouts = config.layouts ?? {};
   const illustrations = config.illustrations ?? {};
-  return `<style>${adminCSS}</style>\n<script type="module">${adminJS(layouts, illustrations)}</script>`;
+  const previews = config.previews ?? {};
+  return `<style>${adminCSS}</style>\n<script type="module">${adminJS(layouts, illustrations, previews)}</script>`;
 }
 
 export type AstroMiddlewareContext = {

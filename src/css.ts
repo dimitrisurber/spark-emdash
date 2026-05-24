@@ -70,6 +70,19 @@ div[role="dialog"][data-open] form > div.emd-grid {
   font-size: 11px; color: var(--kumo-subtle, #6b7280);
 }
 
+/* ── Block preview ───────────────────────────────────── */
+.emd-preview {
+  flex-shrink: 0;
+  max-height: 240px;
+  overflow: hidden;
+  border: 1px solid var(--kumo-line, #e5e7eb);
+  border-radius: 8px;
+  margin: 0 24px 12px;
+  background: #f9fafb;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.emd-preview:empty { display: none; }
+
 @media (max-width: 640px) {
   div[role="dialog"][data-open] { max-width: calc(100vw - 2rem) !important; width: auto !important; }
   div[role="dialog"][data-open] form > div.emd-grid > * { grid-column: 1 / -1 !important; }

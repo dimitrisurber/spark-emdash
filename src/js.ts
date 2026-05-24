@@ -1,8 +1,9 @@
-import type { BlockLayouts, IllustrationMap } from "./types.js";
+import type { BlockLayouts, BlockPreview, IllustrationMap } from "./types.js";
 
 export function adminJS(
   layouts: BlockLayouts,
   illustrations: IllustrationMap,
+  previews: Record<string, BlockPreview>,
 ): string {
   const SPAN: Record<number, number> = { 1: 6, 2: 3, 3: 2 };
   function safe(o: unknown) { return JSON.stringify(o).replace(/</g, "\\u003c"); }
@@ -11,8 +12,26 @@ export function adminJS(
 var ILLUS=${safe(illustrations)};
 var LAYOUTS=${safe(layouts)};
 var SPAN=${safe(SPAN)};
+var PREV=${safe(previews)};
 
 function lbl(el){var l=el.querySelector("label");return l?l.textContent.trim():"";}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+function getVals(fc){
+  var v={};
+  Array.from(fc.children).forEach(function(f){
+    var l=lbl(f);if(!l)return;
+    var el=f.querySelector("textarea,select,input");
+    if(el)v[l]=el.value||"";
+  });
+  return v;
+}
+
+function renderPrev(box,cfg,fc){
+  var vals=getVals(fc);
+  var h=cfg.html.replace(/\\{\\{(.+?)\\}\\}/g,function(_,k){return esc(vals[k.trim()]||"");});
+  box.innerHTML=(cfg.style?"<style>"+cfg.style+"</style>":"")+h;
+}
 
 function addPreview(sel){
   var w=sel.closest("div");
@@ -36,6 +55,17 @@ function enhance(dialog){
   if(!form)return;
   var fc=form.children[0];
   if(!fc||fc.children.length===0)return;
+
+  var pcfg=PREV[type];
+  if(pcfg){
+    var prev=document.createElement("div");prev.className="emd-preview";
+    form.parentNode.insertBefore(prev,form);
+    function up(){renderPrev(prev,pcfg,fc);}
+    up();
+    fc.querySelectorAll("input,textarea,select").forEach(function(el){
+      el.addEventListener("input",up);el.addEventListener("change",up);
+    });
+  }
 
   fc.querySelectorAll("select").forEach(function(s){
     var la=s.closest("div")?.querySelector("label");

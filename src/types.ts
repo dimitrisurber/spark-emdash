@@ -10,7 +10,13 @@ export interface IllustrationMap {
   [key: string]: string;
 }
 
+export interface BlockPreview {
+  html: string;
+  style?: string;
+}
+
 export interface SparkConfig {
   layouts?: BlockLayouts;
   illustrations?: IllustrationMap;
+  previews?: Record<string, BlockPreview>;
 }

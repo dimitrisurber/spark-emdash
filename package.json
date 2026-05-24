@@ -1,7 +1,7 @@
 {
   "name": "spark-emdash",
-  "version": "0.1.0",
-  "description": "Admin UX enhancements for emdash CMS — multi-column modals, scroll, illustration previews",
+  "version": "0.2.0",
+  "description": "Admin UX enhancements for emdash CMS — live block previews, multi-column modals, scroll, illustration previews",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -43,6 +43,6 @@
     "astro": ">=4.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "typescript": "^5.9.3"
   }
 }
