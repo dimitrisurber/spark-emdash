@@ -142,6 +142,6 @@ MIT
 
 ## Built by
 
-[Alchemy Zürich](https://alchemy.zuerich) builds brands and digital products for founders who take their craft seriously. We run emdash CMS on Cloudflare Workers for our client projects and built spark-emdash to give content editors the admin experience they deserve.
+[Alchemy Zürich](https://alchemy.zuerich) builds handcrafted brands for passionate megalomaniacs. We work at the forefront of AI, cloud infrastructure, and modern web tech to give our clients an unfair advantage. spark-emdash is one piece of that stack: we run emdash CMS on Cloudflare Workers for our client projects and refused to ship an admin that made editors suffer.
 
 Spark your emdash. [Spark your business.](https://alchemy.zuerich)
