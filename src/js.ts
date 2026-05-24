@@ -5,11 +5,12 @@ export function adminJS(
   illustrations: IllustrationMap,
 ): string {
   const SPAN: Record<number, number> = { 1: 6, 2: 3, 3: 2 };
+  function safe(o: unknown) { return JSON.stringify(o).replace(/</g, "\\u003c"); }
   return `
 (function(){
-var ILLUS=${JSON.stringify(illustrations)};
-var LAYOUTS=${JSON.stringify(layouts)};
-var SPAN=${JSON.stringify(SPAN)};
+var ILLUS=${safe(illustrations)};
+var LAYOUTS=${safe(layouts)};
+var SPAN=${safe(SPAN)};
 
 function lbl(el){var l=el.querySelector("label");return l?l.textContent.trim():"";}
 
@@ -18,7 +19,9 @@ function addPreview(sel){
   if(!w||w.querySelector(".emd-illus-preview"))return;
   var b=document.createElement("div");b.className="emd-illus-preview";
   function r(){var v=sel.value,s=ILLUS[v];
-    b.innerHTML=s?'<img src="'+s+'" alt="'+v+'"><span>'+v+'</span>':(v?'<span>'+v+'</span>':'');
+    b.textContent="";
+    if(s){var img=document.createElement("img");img.src=s;img.alt=v;b.appendChild(img);}
+    if(v){var sp=document.createElement("span");sp.textContent=v;b.appendChild(sp);}
   }
   r();sel.addEventListener("change",r);w.appendChild(b);
 }
