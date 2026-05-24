@@ -1,40 +1,48 @@
 # spark-emdash
 
-Admin UX upgrades for [emdash](https://emdash.dev) CMS. Drop it in, open the admin, feel the difference.
+Admin UX plugin for [emdash CMS](https://emdash.dev). Fixes the editing experience when your portable text blocks have 20+ fields. Drop-in Astro middleware, zero config required.
 
-Built by [Alchemy Zürich](https://alchemy.zuerich) for our client projects. Open-sourced because every emdash project deserves a proper editing experience.
-
----
-
-## The problem
-
-emdash ships a clean admin. Then you add a `portableTextBlocks` plugin with 20+ fields per block, and the edit modal becomes a scroll-hostile wall of inputs. Your client opens it, squints, closes it, calls you.
-
-## What spark does
-
-**Wider modals.** Edit dialogs expand to 920px on desktop. Your fields can breathe.
-
-**Scrollable forms.** The form body scrolls inside the modal. Save/Cancel stays pinned to the bottom. No more hunting for the button you scrolled past.
-
-**Multi-column field groups.** Define which fields belong together and how many columns they get. Tone/Size/Align in a 3-column row. CTA Label and Href side by side. Section headers separate the groups visually.
-
-**Illustration previews.** Any select field with "illustration", "background", or "foreground" in its label gets a live thumbnail preview. Your client sees the image, picks the right one.
-
-**Sheet scroll fixes.** The right-side panel scrolls properly when blocks have many fields. No more clipped content.
-
-All of this runs as CSS + JS injected via Astro middleware. Zero React conflicts. The enhancement uses CSS grid `order` to rearrange fields visually without moving DOM nodes.
+Built by [Alchemy Zürich](https://alchemy.zuerich) for production client projects on Cloudflare Workers. Open-sourced because every emdash project deserves a proper admin.
 
 ---
 
-## Install
+## What is spark-emdash?
+
+spark-emdash is an Astro middleware plugin that upgrades the emdash CMS admin interface. It intercepts HTML responses from the `/_emdash/admin` route and injects CSS and JavaScript that fix modal sizing, add scroll behavior, organize fields into multi-column groups, and render live illustration previews. It works with any emdash project that uses `portableTextBlocks` plugins, including setups on Cloudflare Workers with D1 databases. The plugin requires zero changes to emdash internals and causes no React conflicts because it uses CSS grid `order` properties instead of moving DOM nodes.
+
+---
+
+## Why does the emdash admin need this?
+
+emdash ships a clean, minimal admin UI. The editing experience works well for simple content types. But when you register custom portable text blocks with many fields (Hero blocks with 20+ fields for layout, media, CTAs, and positioning), the edit modal becomes a single-column wall of inputs that overflows the viewport. The Save button scrolls out of view. Image select fields show text values with no preview. Your client opens the modal, can't find what they need, and calls you.
+
+spark-emdash fixes this by making the modal wider (920px on desktop), adding a scrollable form body with a pinned footer, grouping related fields into labeled multi-column sections, and showing thumbnail previews for illustration selects.
+
+## What does spark-emdash do?
+
+| Feature | What changes |
+|---------|-------------|
+| **Wider modals** | Edit dialogs expand to 920px on desktop instead of the default narrow width |
+| **Scrollable forms** | The form body scrolls inside the modal with Save/Cancel pinned to the bottom |
+| **Multi-column field groups** | Related fields are grouped with section headers and arranged in 2 or 3 column grids |
+| **Illustration previews** | Select fields for images show a 56px live thumbnail of the selected illustration |
+| **Sheet scroll fixes** | The right-side editor panel scrolls properly when blocks have many fields |
+
+All enhancements run as CSS + JS injected via Astro middleware. The JavaScript uses a `MutationObserver` to detect edit dialogs and applies CSS grid `order` and `grid-column` styles in-place. No DOM nodes are moved. React keeps its virtual DOM intact.
+
+---
+
+## How to install spark-emdash
 
 ```bash
 npm install spark-emdash
 ```
 
-## Usage
+Requires Astro 4.0 or later. Works with emdash on any hosting platform, including Cloudflare Workers, Vercel, and Node.js.
 
-In your `src/middleware.ts`:
+## How to use spark-emdash with Astro middleware
+
+Add the middleware to your `src/middleware.ts`:
 
 ```typescript
 import { sparkEmdash } from "spark-emdash/middleware";
@@ -43,7 +51,7 @@ import { sequence } from "astro:middleware";
 export const onRequest = sequence(
   sparkEmdash({
     layouts: {
-      // "Hero" matches the h2 text "Edit Hero" in the modal
+      // "Hero" matches the heading "Edit Hero" in the modal
       Hero: [
         { label: "Content",     cols: 1, fields: ["Eyebrow", "Title", "Lede"] },
         { label: "Layout",      cols: 3, fields: ["Tone", "Size", "Align"] },
@@ -62,13 +70,11 @@ export const onRequest = sequence(
 );
 ```
 
-That's it. Open `/_emdash/admin`, edit a block, see the difference.
+Open `/_emdash/admin`, edit a block, see the difference.
 
-## Configuration
+## How to configure field groups
 
-### `layouts`
-
-A map of block names to field group arrays. The block name is matched against the modal heading (e.g., "Edit **Hero**" matches the key `"Hero"`).
+The `layouts` config maps block type names to field group arrays. The block name is matched against the modal heading (e.g., "Edit **Hero**" matches the key `"Hero"`).
 
 Each group has:
 
@@ -78,33 +84,43 @@ Each group has:
 | `cols` | `1 \| 2 \| 3` | Number of columns for the fields in this group |
 | `fields` | `string[]` | Field labels to include, matched exactly against the `<label>` text in the modal |
 
-Fields with `<textarea>` elements automatically span full width in multi-column groups. Fields not matched by any group appear at the bottom.
+Fields containing `<textarea>` elements automatically span full width in multi-column groups. Fields not matched by any group appear at the bottom of the form.
 
-### `illustrations`
+## How to add illustration previews
 
-A map of illustration keys to image paths. When a select field contains one of these keys as an option value, a 56px thumbnail preview appears below the select. The preview updates live when the selection changes.
-
-## Zero-config mode
-
-Call `sparkEmdash()` with no arguments. You still get wider modals, scrollable forms, sheet fixes, and illustration previews (if you pass the illustration map). The multi-column grouping only kicks in for blocks that have a matching layout definition.
+The `illustrations` config maps option values to image paths. When a select field has a label containing "illustration", "background", or "foreground", spark-emdash renders a 56px thumbnail preview below the select. The preview updates live when the selection changes.
 
 ```typescript
-// Just the base UX fixes, no field grouping
+sparkEmdash({
+  illustrations: {
+    "hero-scene": "/illustrations/hero-scene.webp",
+    "boat-small": "/illustrations/boat.webp",
+    "compass":    "/illustrations/compass-rose.svg",
+  },
+})
+```
+
+## Can spark-emdash run without configuration?
+
+Yes. Call `sparkEmdash()` with no arguments for zero-config mode. You get wider modals, scrollable forms, and sheet scroll fixes immediately. Multi-column field grouping only activates for block types that have a matching layout definition. Illustration previews require the `illustrations` map.
+
+```typescript
+// Base UX fixes, no field grouping
 sparkEmdash()
 
-// Base fixes + illustration previews, no field grouping
+// Base fixes + illustration previews
 sparkEmdash({
   illustrations: { "boat": "/img/boat.webp" }
 })
 ```
 
-## How it works
+---
 
-spark-emdash is an Astro middleware that intercepts HTML responses from `/_emdash/admin` and injects a `<style>` + `<script>` tag before `</head>`.
+## How spark-emdash works under the hood
 
-The CSS handles modal sizing, scroll behavior, and grid layout. The JS uses a `MutationObserver` to detect when edit dialogs open, then applies `order` and `grid-column` styles to fields in-place. No DOM nodes are moved. React keeps its tree intact. No conflicts.
+spark-emdash is an Astro middleware that intercepts HTML responses from `/_emdash/admin` and injects a `<style>` + `<script>` tag before `</head>`. The CSS handles modal sizing, scroll behavior, and the 6-column grid layout. The JavaScript uses a `MutationObserver` to detect when edit dialogs open, then sets `order` and `grid-column` inline styles on each field. Section headers are injected as new DOM elements. No existing DOM nodes are moved or reparented, which keeps React's reconciliation intact.
 
-## API
+## API reference
 
 ```typescript
 import { sparkEmdash, buildPatch } from "spark-emdash";
@@ -114,9 +130,9 @@ import type { SparkConfig, BlockLayouts, FieldGroup, IllustrationMap } from "spa
 
 | Export | Description |
 |--------|-------------|
-| `sparkEmdash(config?)` | Returns an Astro middleware handler |
-| `buildPatch(config?)` | Returns the raw HTML string (style + script) for custom injection |
-| `adminCSS` | The raw CSS string, if you want to use it outside Astro |
+| `sparkEmdash(config?)` | Returns an Astro middleware handler that patches the emdash admin |
+| `buildPatch(config?)` | Returns the raw HTML string (style + script) for custom injection outside Astro |
+| `adminCSS` | The raw CSS string for use in non-Astro setups |
 
 ---
 
@@ -126,6 +142,6 @@ MIT
 
 ## Built by
 
-[Alchemy Zürich](https://alchemy.zuerich). We build brands and digital products for founders who take their craft seriously.
+[Alchemy Zürich](https://alchemy.zuerich) builds brands and digital products for founders who take their craft seriously. We run emdash CMS on Cloudflare Workers for our client projects and built spark-emdash to give content editors the admin experience they deserve.
 
-Spark your emdash. Spark your business.
+Spark your emdash. [Spark your business.](https://alchemy.zuerich)
