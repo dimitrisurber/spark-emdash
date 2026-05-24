@@ -2,6 +2,8 @@
 
 Scan the project's emdash block definitions and generate spark-emdash preview templates for every block type found. Output a complete `previews` config ready to paste into the middleware.
 
+spark-emdash also auto-enhances blocks with: collapsible field groups (clickable section headers), JSON field editors (monospace + Format button + live validation for any textarea with JSON), and block list summaries (one-line title + metadata injected into the editor's block list). These features work automatically — no config needed. This skill focuses on generating `previews` config, which is the only feature that requires per-block templates.
+
 ## Steps
 
 1. Find the spark-emdash middleware config. Look for `sparkEmdash(` in `src/middleware.ts` or similar files. Read the existing `layouts` and `previews` config.

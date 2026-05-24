@@ -146,7 +146,7 @@ Previews work independently of `layouts` — you can add a preview to any block 
 
 ## Can spark-emdash run without configuration?
 
-Yes. Call `sparkEmdash()` with no arguments for zero-config mode. You get wider modals, scrollable forms, and sheet scroll fixes immediately. Multi-column field grouping only activates for block types that have a matching layout definition. Illustration previews require the `illustrations` map.
+Yes. Call `sparkEmdash()` with no arguments for zero-config mode. You get wider modals, scrollable forms, sheet scroll fixes, collapsible section headers, JSON field editors, and block list summaries immediately. Multi-column field grouping only activates for block types that have a matching layout definition. Illustration previews require the `illustrations` map. Live block previews require the `previews` config.
 
 ```typescript
 // Base UX fixes, no field grouping
@@ -184,8 +184,8 @@ import type { SparkConfig, BlockLayouts, FieldGroup, IllustrationMap, BlockPrevi
 
 spark-emdash ships with agent instructions and a preview generator skill:
 
-- **`CLAUDE.md`** — Agent-facing documentation covering architecture, config shape, security model, and how to make changes to the plugin.
-- **`skills/generate-previews.md`** — A skill that scans your project's emdash block definitions (or reads the existing `layouts` config) and auto-generates preview templates for every block type. It maps field names to HTML elements using heuristics (Title → `<h2>`, Eyebrow → `<small>`, Tone → `data-tone` attribute, etc.).
+- **`CLAUDE.md`** — Agent-facing documentation covering architecture, all features (previews, collapsible groups, JSON editor, block summaries), config shape, security model, and how to make changes to the plugin.
+- **`skills/generate-previews.md`** — A skill that scans your project's emdash block definitions (or reads the existing `layouts` config) and auto-generates preview templates for every block type. It maps field names to HTML elements using heuristics (Title → `<h2>`, Eyebrow → `<small>`, Tone → `data-tone` attribute, etc.). The other features (collapsible groups, JSON editor, block summaries) work automatically with no config needed.
 
 To use the skill with Claude Code, copy `skills/generate-previews.md` to your project's `.claude/skills/` directory and invoke it with `/generate-previews`.
 
